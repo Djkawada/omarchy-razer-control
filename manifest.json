@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "local.razer",
+  "id": "com.github.djkawada.razer-control",
   "name": "Razer Control",
   "version": "1.0.0",
-  "author": "Pierre",
+  "author": "Pierre (Djkawada)",
   "license": "MIT",
-  "description": "Contrôleur universel et moniteur de périphériques Razer pour la barre Omarchy Quattro.",
+  "description": "Ultra-lightweight native hardware controller and diagnostic center for Razer keyboards.",
   "kinds": [
     "bar-widget"
   ],
@@ -14,7 +14,7 @@
   },
   "barWidget": {
     "displayName": "Razer Control",
-    "description": "Statut, éclairage, mode gaming et polling rate pour périphériques Razer.",
+    "description": "Hardware control, lighting, gaming mode, locks, and live key rollover tester for Razer keyboards.",
     "category": "Hardware",
     "allowMultiple": false
   }

@@ -6,7 +6,7 @@ import qs.Commons
 
 BarWidget {
   id: root
-  moduleName: "local.razer"
+  moduleName: "com.github.djkawada.razer-control"
 
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
