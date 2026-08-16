@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "local.razer",
+  "name": "Razer Control",
+  "version": "1.0.0",
+  "author": "Pierre",
+  "license": "MIT",
+  "description": "Contrôleur universel et moniteur de périphériques Razer pour la barre Omarchy Quattro.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Razer Control",
+    "description": "Statut, éclairage, mode gaming et polling rate pour périphériques Razer.",
+    "category": "Hardware",
+    "allowMultiple": false
+  }
+}
