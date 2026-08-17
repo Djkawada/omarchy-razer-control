@@ -274,11 +274,6 @@ BarWidget {
     }
   }
 
-  Process {
-    id: openAppProc
-    command: [root.ctlPath, "open-app"]
-  }
-
   BarIconButton {
     id: button
     anchors.fill: parent

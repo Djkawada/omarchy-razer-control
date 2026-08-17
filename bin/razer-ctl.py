@@ -12,12 +12,6 @@ import fcntl
 import subprocess
 import time
 import struct
-import socket
-from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-try:
-    import evdev
-except ImportError:
-    evdev = None
 
 # Known Razer Product Database & Capabilities
 RAZER_DEVICES_DB = {
@@ -218,6 +212,27 @@ def send_razer_packet(hidraw_path, report_bytes):
         except Exception:
             return False
 
+def get_razer_hidraw_nodes():
+    """Returns all /dev/hidraw* device nodes that belong to Razer (vendor 0x1532)."""
+    nodes = []
+    for hidraw in sorted(glob.glob("/sys/class/hidraw/hidraw*")):
+        uevent_path = os.path.join(hidraw, "device", "uevent")
+        if not os.path.exists(uevent_path):
+            continue
+        try:
+            with open(uevent_path, "r") as f:
+                content = f.read()
+            for line in content.splitlines():
+                if line.startswith("HID_ID="):
+                    parts = line.split("=")[1].split(":")
+                    if len(parts) >= 3 and parts[1].lower().lstrip("0").zfill(4) == "1532":
+                        dev_name = os.path.basename(hidraw)
+                        nodes.append(f"/dev/{dev_name}")
+                        break
+        except Exception:
+            continue
+    return nodes
+
 def scan_razer_devices():
     """Scans system for connected Razer USB HID devices."""
     detected = []
@@ -317,14 +332,12 @@ def cmd_status():
         "devices": devices,
         "active_device": devices[0] if devices else None,
         "state": state,
-        "locks": locks,
-        "webapp_url": f"file://{os.path.expanduser('~/Work/deathstalker-web/index.html')}"
+        "locks": locks
     }
     print(json.dumps(result, indent=2))
 
 def cmd_set_brightness(val):
     val = max(0, min(255, int(val)))
-    devices = scan_razer_devices()
     state = load_cached_state()
     state["brightness"] = val
     save_cached_state(state)
@@ -335,21 +348,20 @@ def cmd_set_brightness(val):
     pkt2 = build_razer_report(0x03, 0x02, 0x02, [0x01, 0x01 if val > 0 else 0x00])
     
     success = False
-    for dev in devices:
-        for hid in glob.glob("/dev/hidraw*"):
-            s1 = send_razer_packet(hid, pkt1)
-            s2 = send_razer_packet(hid, pkt2)
-            if s1 or s2:
-                success = True
+    for hid in get_razer_hidraw_nodes():
+        s1 = send_razer_packet(hid, pkt1)
+        s2 = send_razer_packet(hid, pkt2)
+        if s1 or s2:
+            success = True
     print(json.dumps({"success": success, "brightness": val}))
 
 def cmd_set_mode(mode):
-    devices = scan_razer_devices()
+    if mode not in ["static", "breathing", "off"]:
+        mode = "static"
     state = load_cached_state()
     state["mode"] = mode
     save_cached_state(state)
     
-    success = False
     if mode == "breathing":
         pkt = build_razer_report(0x03, 0x01, 0x03, [0x01, 0x02, 0x00])
     elif mode == "off":
@@ -357,66 +369,48 @@ def cmd_set_mode(mode):
     else: # static
         pkt = build_razer_report(0x03, 0x01, 0x03, [0x01, 0x00, 0x00])
         
-    for dev in devices:
-        for hid in glob.glob("/dev/hidraw*"):
-            if send_razer_packet(hid, pkt):
-                success = True
+    success = False
+    for hid in get_razer_hidraw_nodes():
+        if send_razer_packet(hid, pkt):
+            success = True
     print(json.dumps({"success": success, "mode": mode}))
 
 def cmd_set_game_mode(enabled):
-    is_on = (enabled.lower() in ("1", "true", "on", "yes"))
-    devices = scan_razer_devices()
+    is_on = (str(enabled).lower() in ("1", "true", "on", "yes"))
     state = load_cached_state()
     state["game_mode"] = is_on
     save_cached_state(state)
     
     pkt = build_razer_report(0x03, 0x04, 0x02, [0x00, 0x01 if is_on else 0x00])
     success = False
-    for dev in devices:
-        for hid in glob.glob("/dev/hidraw*"):
-            if send_razer_packet(hid, pkt):
-                success = True
+    for hid in get_razer_hidraw_nodes():
+        if send_razer_packet(hid, pkt):
+            success = True
     print(json.dumps({"success": success, "game_mode": is_on}))
 
 def cmd_set_polling(hz):
-    hz = int(hz)
+    try:
+        hz = int(hz)
+    except (ValueError, TypeError):
+        hz = 500
     rate_code = 0x02
     if hz == 1000:
         rate_code = 0x01
     elif hz == 125:
         rate_code = 0x08
+    else:
+        hz = 500
         
-    devices = scan_razer_devices()
     state = load_cached_state()
     state["polling_rate"] = hz
     save_cached_state(state)
     
     pkt = build_razer_report(0x00, 0x05, 0x01, [rate_code])
     success = False
-    for dev in devices:
-        for hid in glob.glob("/dev/hidraw*"):
-            if send_razer_packet(hid, pkt):
-                success = True
+    for hid in get_razer_hidraw_nodes():
+        if send_razer_packet(hid, pkt):
+            success = True
     print(json.dumps({"success": success, "polling_rate": hz}))
-
-def cmd_open_app():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    candidates = [
-        os.path.join(script_dir, "..", "web", "index.html"),
-        os.path.expanduser("~/Work/deathstalker-web/index.html"),
-        os.path.expanduser("~/.local/share/deathstalker-web/index.html")
-    ]
-    app_path = next((os.path.abspath(p) for p in candidates if os.path.exists(p)), None)
-    if not app_path:
-        app_path = os.path.expanduser("~/Work/deathstalker-web/index.html")
-    
-    if subprocess.call(["which", "brave"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
-        subprocess.Popen(["brave", f"--app=file://{app_path}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    elif subprocess.call(["which", "chromium"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
-        subprocess.Popen(["chromium", f"--app=file://{app_path}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    else:
-        subprocess.Popen(["xdg-open", f"file://{app_path}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    print(json.dumps({"success": True, "action": "open_app"}))
 
 HIDIOCSOUTPUT_2 = 0xc002480b
 
@@ -431,7 +425,7 @@ def set_hardware_leds(num_lock=True, caps_lock=False, scroll_lock=False):
         
     buf = bytearray([0x00, bitmask])
     success = False
-    for path in glob.glob("/dev/hidraw*"):
+    for path in get_razer_hidraw_nodes():
         try:
             fd = os.open(path, os.O_RDWR | os.O_NONBLOCK)
             fcntl.ioctl(fd, HIDIOCSOUTPUT_2, buf)
@@ -450,13 +444,12 @@ def find_razer_event_nodes():
         for p in sorted(glob.glob("/dev/input/by-id/usb-Razer*-event-kbd")):
             if os.path.exists(p):
                 nodes.append(p)
-    if not nodes:
-        for p in glob.glob("/dev/input/event*"):
-            nodes.append(p)
     return nodes
 
 def inject_key_event(key_code):
     nodes = find_razer_event_nodes()
+    if not nodes:
+        return False
     success = False
     for node in nodes:
         try:
@@ -488,106 +481,16 @@ def cmd_toggle_key(key_name):
     }
     
     code = key_codes.get(key_name)
+    success = False
     if code:
-        inject_key_event(code)
-    elif subprocess.call(["which", "wtype"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+        success = inject_key_event(code)
+    if not success and subprocess.call(["which", "wtype"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
         subprocess.call(["wtype", "-k", key_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         
     time.sleep(0.08)
     locks = get_lock_states()
     set_hardware_leds(locks["num_lock"], locks["caps_lock"], locks["scroll_lock"])
     print(json.dumps({"success": True, "key": key_name, "locks": locks}))
-
-class RazerHTTPHandler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        web_dir = os.path.abspath(os.path.join(script_dir, "..", "web"))
-        super().__init__(*args, directory=web_dir, **kwargs)
-
-    def log_message(self, format, *args):
-        pass
-
-    def _send_json(self, data, status=200):
-        body = json.dumps(data).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
-        self.wfile.write(body)
-
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
-
-    def do_GET(self):
-        if self.path == "/api/status":
-            devices = scan_razer_devices()
-            locks = get_lock_states()
-            state = load_cached_state()
-            self._send_json({
-                "connected": len(devices) > 0,
-                "devices": devices,
-                "active_device": devices[0] if devices else None,
-                "locks": locks,
-                "state": state
-            })
-        else:
-            super().do_GET()
-
-    def do_POST(self):
-        content_length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
-        try:
-            req_data = json.loads(body)
-        except Exception:
-            req_data = {}
-
-        if self.path == "/api/toggle-caps":
-            cmd_toggle_key("Caps_Lock")
-            self._send_json({"success": True, "locks": get_lock_states()})
-        elif self.path == "/api/toggle-num":
-            cmd_toggle_key("Num_Lock")
-            self._send_json({"success": True, "locks": get_lock_states()})
-        elif self.path == "/api/toggle-scroll":
-            cmd_toggle_key("Scroll_Lock")
-            self._send_json({"success": True, "locks": get_lock_states()})
-        elif self.path == "/api/set-brightness":
-            val = req_data.get("brightness", 255)
-            cmd_set_brightness(val)
-            self._send_json({"success": True, "brightness": val})
-        elif self.path == "/api/set-mode":
-            mode = req_data.get("mode", "static")
-            cmd_set_mode(mode)
-            self._send_json({"success": True, "mode": mode})
-        elif self.path == "/api/set-game-mode":
-            gm = req_data.get("game_mode", "on")
-            cmd_set_game_mode(gm)
-            self._send_json({"success": True, "game_mode": gm})
-        elif self.path == "/api/set-polling":
-            hz = req_data.get("polling_rate", 500)
-            cmd_set_polling(hz)
-            self._send_json({"success": True, "polling_rate": hz})
-        elif self.path == "/api/set-lang":
-            lang = req_data.get("lang", "en")
-            cmd_set_lang(lang)
-            self._send_json({"success": True, "lang": lang})
-        else:
-            self.send_error(404, "API endpoint not found")
-
-def is_server_running(port=15320):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('127.0.0.1', port)) == 0
-
-def cmd_server(port=15320):
-    server_address = ('127.0.0.1', port)
-    httpd = ThreadingHTTPServer(server_address, RazerHTTPHandler)
-    httpd.serve_forever()
 
 def cmd_set_lang(lang):
     if lang not in ["fr", "en", "ja"]:
@@ -596,23 +499,6 @@ def cmd_set_lang(lang):
     state["lang"] = lang
     save_cached_state(state)
     print(json.dumps({"success": True, "lang": lang}))
-
-def cmd_open_app():
-    port = 15320
-    if not is_server_running(port):
-        script_path = os.path.abspath(__file__)
-        subprocess.Popen([sys.executable, script_path, "server", str(port)],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-        time.sleep(0.3)
-        
-    url = f"http://127.0.0.1:{port}/"
-    if subprocess.call(["which", "brave"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
-        subprocess.Popen(["brave", f"--app={url}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    elif subprocess.call(["which", "chromium"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
-        subprocess.Popen(["chromium", f"--app={url}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    else:
-        subprocess.Popen(["xdg-open", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    print(json.dumps({"success": True, "action": "open_app", "url": url}))
 
 def main():
     if len(sys.argv) < 2 or sys.argv[1] == "status":
@@ -633,13 +519,8 @@ def main():
         cmd_toggle_key("Num_Lock")
     elif sys.argv[1] == "toggle-scroll":
         cmd_toggle_key("Scroll_Lock")
-    elif sys.argv[1] == "server":
-        p = int(sys.argv[2]) if len(sys.argv) > 2 else 15320
-        cmd_server(p)
-    elif sys.argv[1] == "open-app":
-        cmd_open_app()
     else:
-        print("Usage: razer-ctl.py [status|set-brightness <val>|set-mode <mode>|set-game-mode <on/off>|set-polling <125/500/1000>|set-lang <fr/en/ja>|toggle-caps|toggle-num|toggle-scroll|server|open-app]")
+        print("Usage: razer-ctl.py [status|set-brightness <val>|set-mode <mode>|set-game-mode <on/off>|set-polling <125/500/1000>|set-lang <fr/en/ja>|toggle-caps|toggle-num|toggle-scroll]")
 
 if __name__ == "__main__":
     main()

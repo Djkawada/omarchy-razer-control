@@ -1,3 +1,3 @@
-# Razer USB HID and Input Device Access for Non-Root Users
-KERNEL=="hidraw*", ATTRS{idVendor}=="1532", MODE="0666", TAG+="uaccess"
-KERNEL=="event*", ATTRS{idVendor}=="1532", MODE="0666", TAG+="uaccess"
+# Razer USB HID and Input Device Access for Non-Root Users (managed via systemd uaccess ACLs)
+KERNEL=="hidraw*", ATTRS{idVendor}=="1532", TAG+="uaccess"
+KERNEL=="event*", ATTRS{idVendor}=="1532", TAG+="uaccess"
