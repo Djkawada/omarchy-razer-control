@@ -8,7 +8,7 @@
 
 ## 🎯 Vision du Projet
 Offrir aux utilisateurs de claviers Razer sous **Omarchy Linux** (Hyprland / Quickshell) une solution **ultra-légère, autonome et sans aucun démon lourd en arrière-plan** (contrairement à OpenRazer, Polychromatic ou Synapse) :
-- Communication directe matériel via `/dev/hidraw*` et `/dev/input/*` (protocole Razer 90 octets).
+- Communication directe matériel via `/dev/hidraw*` (protocole Razer 90 octets).
 - **100 % natif Quickshell / Qt Quick** : Zéro latence, 0 Mo d'overhead Chromium, fluidité à 60/144/240 Hz.
 - Prise en charge des claviers classiques et modernes (DeathStalker 2014, Expert, Chroma, BlackWidow, Huntsman...).
 

@@ -11,7 +11,7 @@ An **ultra-lightweight, zero-bloat, native hardware controller and diagnostic ce
 Linux users often face a dilemma when using Razer peripherals: either install heavy, multi-layered daemon suites (like OpenRazer + Polychromatic / RazerGenie with multiple background D-Bus services and Python runtimes) or have no control over their hardware. Furthermore, many older or legacy keyboards (such as the DeathStalker 2014 series) are only partially supported or require heavy workarounds.
 
 **Razer Control** solves this problem by providing:
-- **Zero background daemons**: Direct communication with Razer hardware via standard Linux `/dev/hidraw*` and `/dev/input/*` device nodes.
+- **Zero background daemons**: Direct communication with Razer hardware via standard Linux `/dev/hidraw*` device nodes.
 - **100% Native Quickshell & C++ Qt Quick**: Silky-smooth rendering matching your monitor's refresh rate (60/144/240Hz) with **0 MB Chromium / Web browser memory overhead**.
 - **Self-contained**: Both the status bar widget and the full Control Center window are bundled in a single lightweight plugin package.
 - **Legacy & Modern Keyboard Support**: Full support for classic and modern Razer keyboards alike.
@@ -48,7 +48,7 @@ Full automatic detection and manual one-click switching between:
 ## 📦 Installation & Setup
 
 ### 1. Configure Udev Permissions
-Allow your user account to communicate with Razer HID and input event devices without needing `root` / `sudo`:
+Allow your user account to communicate with Razer HID devices without needing `root` / `sudo`:
 
 ```bash
 # Copy udev rule
