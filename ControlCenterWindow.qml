@@ -5,11 +5,12 @@ import Quickshell
 import Quickshell.Io
 import qs.Ui
 import qs.Commons
+import qs.Commons as Commons
 
 FloatingWindow {
   id: rootWindow
   title: "Razer Control Center"
-  color: Color.background
+  color: Commons.Color.background
   implicitWidth: Style.space(1020)
   implicitHeight: Style.space(720)
   minimumSize: Qt.size(Style.space(860), Style.space(600))
@@ -142,14 +143,14 @@ FloatingWindow {
               font.family: Style.font.family
               font.pixelSize: Style.font.title
               font.bold: true
-              color: Color.foreground
+              color: Commons.Color.foreground
             }
 
             Text {
               text: (rootWindow.pluginRoot && rootWindow.pluginRoot.isConnected) ? (rootWindow.t("connected_ready") + " • " + (rootWindow.currentLang === "fr" ? "Moteur Matériel Quickshell" : (rootWindow.currentLang === "ja" ? "Quickshell ネイティブ制御" : "Native Quickshell Engine"))) : rootWindow.t("disconnected")
               font.family: Style.font.family
               font.pixelSize: Style.font.caption
-              color: (rootWindow.pluginRoot && rootWindow.pluginRoot.isConnected) ? "#00e756" : Color.muted
+              color: (rootWindow.pluginRoot && rootWindow.pluginRoot.isConnected) ? "#00e756" : Commons.Color.muted
             }
           }
         }
@@ -267,7 +268,7 @@ FloatingWindow {
                     text: rootWindow.t("brightness") + " (" + Math.round(((rootWindow.pluginRoot ? rootWindow.pluginRoot.brightness : 255) / 255) * 100) + "%)"
                     font.family: Style.font.family
                     font.pixelSize: Style.font.caption
-                    color: Color.muted
+                    color: Commons.Color.muted
                   }
                 }
 
@@ -352,7 +353,7 @@ FloatingWindow {
                         text: rootWindow.currentLang === "fr" ? "Géré par le microprogramme • LED [G]" : (rootWindow.currentLang === "ja" ? "ファームウェア内部制御 • [G] LED点灯" : "Handled by firmware • [G] LED")
                         font.family: Style.font.family
                         font.pixelSize: Style.font.caption - 1
-                        color: Color.muted
+                        color: Commons.Color.muted
                       }
                     }
 
@@ -422,7 +423,7 @@ FloatingWindow {
                   text: rootWindow.currentLang === "fr" ? "1. Appuyer sur Fn + F9 (la LED [M] clignote lentement)\n2. Saisir la séquence de touches souhaitée\n3. Réappuyer sur Fn + F9 (la LED [M] clignote vite)\n4. Appuyer sur la touche de destination pour assigner\n(Échap pour annuler à tout moment)" : (rootWindow.currentLang === "ja" ? "1. Fn + F9 を押す（[M] LEDがゆっくり点滅）\n2. 記録したいキーの組み合わせを入力\n3. 再度 Fn + F9 を押す（[M] LEDが高速点滅）\n4. 割り当てたいキーを押して登録完了\n（Escキーでいつでもキャンセル可能）" : "1. Press Fn + F9 (LED [M] blinks slowly)\n2. Type your desired key sequence\n3. Press Fn + F9 again (LED [M] blinks rapidly)\n4. Press target key to bind and save\n(Press Esc at any time to cancel)")
                   font.family: Style.font.family
                   font.pixelSize: Style.font.caption - 1
-                  color: Color.muted
+                  color: Commons.Color.muted
                   lineHeight: 1.4
                   wrapMode: Text.WordWrap
                   width: parent.width
@@ -488,7 +489,7 @@ FloatingWindow {
                           font.family: Style.font.family
                           font.pixelSize: Style.font.caption - 2
                           font.bold: true
-                          color: modelData.active ? "#00ff66" : Color.muted
+                          color: modelData.active ? "#00ff66" : Commons.Color.muted
                           anchors.horizontalCenter: parent.horizontalCenter
                         }
                       }
@@ -536,7 +537,7 @@ FloatingWindow {
                   text: rootWindow.t("scroll_hint")
                   font.family: Style.font.family
                   font.pixelSize: Style.font.caption - 1
-                  color: Color.muted
+                  color: Commons.Color.muted
                   wrapMode: Text.WordWrap
                   width: parent.width
                   opacity: 0.85
@@ -652,7 +653,7 @@ FloatingWindow {
                       font.family: Style.font.family
                       font.pixelSize: Style.font.caption - 1
                       font.bold: true
-                      color: rootWindow.activeKeyCount > 0 ? "#000000" : Color.muted
+                      color: rootWindow.activeKeyCount > 0 ? "#000000" : Commons.Color.muted
                     }
                   }
                 }
@@ -672,7 +673,7 @@ FloatingWindow {
 
                     Column {
                       anchors.centerIn: parent
-                      Text { text: rootWindow.currentLang === "fr" ? "Dernière touche" : (rootWindow.currentLang === "ja" ? "最終入力キー" : "Last key"); font.pixelSize: Style.font.caption - 2; color: Color.muted; anchors.horizontalCenter: parent.horizontalCenter }
+                      Text { text: rootWindow.currentLang === "fr" ? "Dernière touche" : (rootWindow.currentLang === "ja" ? "最終入力キー" : "Last key"); font.pixelSize: Style.font.caption - 2; color: Commons.Color.muted; anchors.horizontalCenter: parent.horizontalCenter }
                       Text { text: rootWindow.lastKeyName; font.pixelSize: Style.font.caption; font.bold: true; color: "#00ff66"; anchors.horizontalCenter: parent.horizontalCenter }
                     }
                   }
@@ -687,7 +688,7 @@ FloatingWindow {
 
                     Column {
                       anchors.centerIn: parent
-                      Text { text: rootWindow.currentLang === "fr" ? "Roll-Over max" : (rootWindow.currentLang === "ja" ? "最大同時押し" : "Max Rollover"); font.pixelSize: Style.font.caption - 2; color: Color.muted; anchors.horizontalCenter: parent.horizontalCenter }
+                      Text { text: rootWindow.currentLang === "fr" ? "Roll-Over max" : (rootWindow.currentLang === "ja" ? "最大同時押し" : "Max Rollover"); font.pixelSize: Style.font.caption - 2; color: Commons.Color.muted; anchors.horizontalCenter: parent.horizontalCenter }
                       Text { text: rootWindow.maxKro + " KRO"; font.pixelSize: Style.font.caption; font.bold: true; color: "#00e756"; anchors.horizontalCenter: parent.horizontalCenter }
                     }
                   }
@@ -726,7 +727,7 @@ FloatingWindow {
                           color: rootWindow.activeKeyCount > 0 ? "#143820" : "#1e293b"
                           border.color: "#334155"
                           border.width: 1
-                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 8; font.bold: true; color: Color.muted }
+                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 8; font.bold: true; color: Commons.Color.muted }
                         }
                       }
                     }
@@ -743,7 +744,7 @@ FloatingWindow {
                           color: "#1e293b"
                           border.color: "#334155"
                           border.width: 1
-                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 9; color: Color.foreground }
+                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 9; color: Commons.Color.foreground }
                         }
                       }
                     }
@@ -760,7 +761,7 @@ FloatingWindow {
                           color: "#1e293b"
                           border.color: "#334155"
                           border.width: 1
-                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 9; color: Color.foreground }
+                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 9; color: Commons.Color.foreground }
                         }
                       }
                     }
@@ -777,7 +778,7 @@ FloatingWindow {
                           color: (modelData === "CAPS" && rootWindow.pluginRoot && rootWindow.pluginRoot.capsLock) ? "#00e756" : "#1e293b"
                           border.color: "#334155"
                           border.width: 1
-                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 9; color: (modelData === "CAPS" && rootWindow.pluginRoot && rootWindow.pluginRoot.capsLock) ? "#000000" : Color.foreground }
+                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 9; color: (modelData === "CAPS" && rootWindow.pluginRoot && rootWindow.pluginRoot.capsLock) ? "#000000" : Commons.Color.foreground }
                         }
                       }
                     }
@@ -794,7 +795,7 @@ FloatingWindow {
                           color: "#1e293b"
                           border.color: "#334155"
                           border.width: 1
-                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 9; color: Color.foreground }
+                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 9; color: Commons.Color.foreground }
                         }
                       }
                     }
@@ -811,7 +812,7 @@ FloatingWindow {
                           color: "#1e293b"
                           border.color: "#334155"
                           border.width: 1
-                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 9; color: Color.foreground }
+                          Text { anchors.centerIn: parent; text: modelData; font.pixelSize: 9; color: Commons.Color.foreground }
                         }
                       }
                     }
@@ -866,7 +867,7 @@ FloatingWindow {
                     text: modelData.text
                     font.family: "monospace"
                     font.pixelSize: 10
-                    color: modelData.type === "ok" ? "#00ff66" : (modelData.type === "err" ? "#ff4444" : Color.muted)
+                    color: modelData.type === "ok" ? "#00ff66" : (modelData.type === "err" ? "#ff4444" : Commons.Color.muted)
                     wrapMode: Text.Wrap
                   }
                 }

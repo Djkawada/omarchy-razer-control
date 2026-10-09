@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import qs.Ui
 import qs.Commons
+import qs.Commons as Commons
 
 BarWidget {
   id: root
@@ -351,7 +352,7 @@ BarWidget {
             font.family: Style.font.family
             font.pixelSize: Style.font.body
             font.bold: true
-            color: root.isConnected ? Color.foreground : Color.muted
+            color: root.isConnected ? Commons.Color.foreground : Commons.Color.muted
             elide: Text.ElideRight
             width: parent.width
           }
@@ -360,7 +361,7 @@ BarWidget {
             text: root.isConnected ? root.t("connected_ready") : root.t("disconnected")
             font.family: Style.font.family
             font.pixelSize: Style.font.caption
-            color: root.isConnected ? "#00e756" : Color.muted
+            color: root.isConnected ? "#00e756" : Commons.Color.muted
           }
         }
       }
@@ -379,7 +380,7 @@ BarWidget {
             text: root.t("brightness")
             font.family: Style.font.family
             font.pixelSize: Style.font.caption
-            color: Color.muted
+            color: Commons.Color.muted
           }
           Item {
             width: parent.width - parent.children[0].implicitWidth - parent.children[2].implicitWidth
@@ -454,7 +455,7 @@ BarWidget {
             text: root.t("game_mode_title")
             font.family: Style.font.family
             font.pixelSize: Style.font.body
-            color: Color.foreground
+            color: Commons.Color.foreground
             anchors.verticalCenter: parent.verticalCenter
           }
 
@@ -523,7 +524,7 @@ BarWidget {
           text: root.t("scroll_hint")
           font.family: Style.font.family
           font.pixelSize: Style.font.caption - 1
-          color: Color.muted
+          color: Commons.Color.muted
           wrapMode: Text.WordWrap
           width: parent.width
           opacity: 0.8
@@ -539,7 +540,7 @@ BarWidget {
           text: root.t("lang_label")
           font.family: Style.font.family
           font.pixelSize: Style.font.caption
-          color: Color.muted
+          color: Commons.Color.muted
           anchors.verticalCenter: parent.verticalCenter
         }
 
