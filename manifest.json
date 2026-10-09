@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "com.github.djkawada.razer-control",
   "name": "Razer Control",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Pierre (Djkawada)",
   "license": "MIT",
   "description": "Ultra-lightweight native hardware controller and diagnostic center for Razer keyboards.",
